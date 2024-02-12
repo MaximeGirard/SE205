@@ -1,0 +1,383 @@
+
+vector_addition:     format de fichier elf64-x86-64
+
+
+Déassemblage de la section .init :
+
+0000000000001000 <_init>:
+    1000:	f3 0f 1e fa          	endbr64 
+    1004:	48 83 ec 08          	sub    $0x8,%rsp
+    1008:	48 8b 05 d9 2f 00 00 	mov    0x2fd9(%rip),%rax        # 3fe8 <__gmon_start__@Base>
+    100f:	48 85 c0             	test   %rax,%rax
+    1012:	74 02                	je     1016 <_init+0x16>
+    1014:	ff d0                	call   *%rax
+    1016:	48 83 c4 08          	add    $0x8,%rsp
+    101a:	c3                   	ret    
+
+Déassemblage de la section .plt :
+
+0000000000001020 <.plt>:
+    1020:	ff 35 92 2f 00 00    	push   0x2f92(%rip)        # 3fb8 <_GLOBAL_OFFSET_TABLE_+0x8>
+    1026:	f2 ff 25 93 2f 00 00 	bnd jmp *0x2f93(%rip)        # 3fc0 <_GLOBAL_OFFSET_TABLE_+0x10>
+    102d:	0f 1f 00             	nopl   (%rax)
+    1030:	f3 0f 1e fa          	endbr64 
+    1034:	68 00 00 00 00       	push   $0x0
+    1039:	f2 e9 e1 ff ff ff    	bnd jmp 1020 <_init+0x20>
+    103f:	90                   	nop
+    1040:	f3 0f 1e fa          	endbr64 
+    1044:	68 01 00 00 00       	push   $0x1
+    1049:	f2 e9 d1 ff ff ff    	bnd jmp 1020 <_init+0x20>
+    104f:	90                   	nop
+
+Déassemblage de la section .plt.got :
+
+0000000000001050 <__cxa_finalize@plt>:
+    1050:	f3 0f 1e fa          	endbr64 
+    1054:	f2 ff 25 9d 2f 00 00 	bnd jmp *0x2f9d(%rip)        # 3ff8 <__cxa_finalize@GLIBC_2.2.5>
+    105b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+
+Déassemblage de la section .plt.sec :
+
+0000000000001060 <__stack_chk_fail@plt>:
+    1060:	f3 0f 1e fa          	endbr64 
+    1064:	f2 ff 25 5d 2f 00 00 	bnd jmp *0x2f5d(%rip)        # 3fc8 <__stack_chk_fail@GLIBC_2.4>
+    106b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+
+0000000000001070 <__printf_chk@plt>:
+    1070:	f3 0f 1e fa          	endbr64 
+    1074:	f2 ff 25 55 2f 00 00 	bnd jmp *0x2f55(%rip)        # 3fd0 <__printf_chk@GLIBC_2.3.4>
+    107b:	0f 1f 44 00 00       	nopl   0x0(%rax,%rax,1)
+
+Déassemblage de la section .text :
+
+0000000000001080 <main>:
+
+/// Create two simple vectors, perform an element-wise addition, and print the 
+/// result.
+/// @return Always returns 0.
+int main()
+{
+    1080:	f3 0f 1e fa          	endbr64 
+    1084:	41 55                	push   %r13
+  // allocate space for an additional vector
+  int dest[vsize];
+
+
+  // perform the vector addition
+  vector_add(dest, src1, src2, vsize);
+    1086:	b9 0a 00 00 00       	mov    $0xa,%ecx
+{
+    108b:	41 54                	push   %r12
+    108d:	55                   	push   %rbp
+    108e:	48 81 ec 90 00 00 00 	sub    $0x90,%rsp
+  int src1[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    1095:	66 0f 6f 05 93 0f 00 	movdqa 0xf93(%rip),%xmm0        # 2030 <_IO_stdin_used+0x30>
+    109c:	00 
+{
+    109d:	64 48 8b 04 25 28 00 	mov    %fs:0x28,%rax
+    10a4:	00 00 
+    10a6:	48 89 84 24 88 00 00 	mov    %rax,0x88(%rsp)
+    10ad:	00 
+    10ae:	31 c0                	xor    %eax,%eax
+  vector_add(dest, src1, src2, vsize);
+    10b0:	4c 8d 64 24 30       	lea    0x30(%rsp),%r12
+    10b5:	49 89 e5             	mov    %rsp,%r13
+    10b8:	48 8d 6c 24 60       	lea    0x60(%rsp),%rbp
+  int src1[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    10bd:	0f 29 04 24          	movaps %xmm0,(%rsp)
+  vector_add(dest, src1, src2, vsize);
+    10c1:	4c 89 e2             	mov    %r12,%rdx
+    10c4:	4c 89 ee             	mov    %r13,%rsi
+    10c7:	48 89 ef             	mov    %rbp,%rdi
+  int src1[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    10ca:	66 0f 6f 05 6e 0f 00 	movdqa 0xf6e(%rip),%xmm0        # 2040 <_IO_stdin_used+0x40>
+    10d1:	00 
+    10d2:	48 8b 05 97 0f 00 00 	mov    0xf97(%rip),%rax        # 2070 <_IO_stdin_used+0x70>
+    10d9:	0f 29 44 24 10       	movaps %xmm0,0x10(%rsp)
+  int src2[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    10de:	66 0f 6f 05 6a 0f 00 	movdqa 0xf6a(%rip),%xmm0        # 2050 <_IO_stdin_used+0x50>
+    10e5:	00 
+  int src1[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    10e6:	48 89 44 24 20       	mov    %rax,0x20(%rsp)
+  int src2[] = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    10eb:	48 8b 05 86 0f 00 00 	mov    0xf86(%rip),%rax        # 2078 <_IO_stdin_used+0x78>
+    10f2:	0f 29 44 24 30       	movaps %xmm0,0x30(%rsp)
+    10f7:	66 0f 6f 05 61 0f 00 	movdqa 0xf61(%rip),%xmm0        # 2060 <_IO_stdin_used+0x60>
+    10fe:	00 
+    10ff:	48 89 44 24 50       	mov    %rax,0x50(%rsp)
+    1104:	0f 29 44 24 40       	movaps %xmm0,0x40(%rsp)
+  vector_add(dest, src1, src2, vsize);
+    1109:	e8 82 01 00 00       	call   1290 <vector_add>
+}
+
+__fortify_function int
+printf (const char *__restrict __fmt, ...)
+{
+  return __printf_chk (__USE_FORTIFY_LEVEL - 1, __fmt, __va_arg_pack ());
+    110e:	48 8d 35 fa 0e 00 00 	lea    0xefa(%rip),%rsi        # 200f <_IO_stdin_used+0xf>
+    1115:	bf 01 00 00 00       	mov    $0x1,%edi
+    111a:	31 c0                	xor    %eax,%eax
+    111c:	e8 4f ff ff ff       	call   1070 <__printf_chk@plt>
+
+  // print the vectors
+  printf("src1: "); vector_print(src1, vsize);
+    1121:	be 0a 00 00 00       	mov    $0xa,%esi
+    1126:	4c 89 ef             	mov    %r13,%rdi
+    1129:	e8 52 02 00 00       	call   1380 <vector_print>
+    112e:	48 8d 35 e1 0e 00 00 	lea    0xee1(%rip),%rsi        # 2016 <_IO_stdin_used+0x16>
+    1135:	bf 01 00 00 00       	mov    $0x1,%edi
+    113a:	31 c0                	xor    %eax,%eax
+    113c:	e8 2f ff ff ff       	call   1070 <__printf_chk@plt>
+  printf("src2: "); vector_print(src2, vsize);
+    1141:	be 0a 00 00 00       	mov    $0xa,%esi
+    1146:	4c 89 e7             	mov    %r12,%rdi
+    1149:	e8 32 02 00 00       	call   1380 <vector_print>
+    114e:	48 8d 35 c8 0e 00 00 	lea    0xec8(%rip),%rsi        # 201d <_IO_stdin_used+0x1d>
+    1155:	bf 01 00 00 00       	mov    $0x1,%edi
+    115a:	31 c0                	xor    %eax,%eax
+    115c:	e8 0f ff ff ff       	call   1070 <__printf_chk@plt>
+  printf("dest: "); vector_print(dest, vsize);
+    1161:	be 0a 00 00 00       	mov    $0xa,%esi
+    1166:	48 89 ef             	mov    %rbp,%rdi
+    1169:	e8 12 02 00 00       	call   1380 <vector_print>
+  
+  return 0;
+}
+    116e:	48 8b 84 24 88 00 00 	mov    0x88(%rsp),%rax
+    1175:	00 
+    1176:	64 48 2b 04 25 28 00 	sub    %fs:0x28,%rax
+    117d:	00 00 
+    117f:	75 0f                	jne    1190 <main+0x110>
+    1181:	48 81 c4 90 00 00 00 	add    $0x90,%rsp
+    1188:	31 c0                	xor    %eax,%eax
+    118a:	5d                   	pop    %rbp
+    118b:	41 5c                	pop    %r12
+    118d:	41 5d                	pop    %r13
+    118f:	c3                   	ret    
+    1190:	e8 cb fe ff ff       	call   1060 <__stack_chk_fail@plt>
+    1195:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+    119c:	00 00 00 
+    119f:	90                   	nop
+
+00000000000011a0 <_start>:
+    11a0:	f3 0f 1e fa          	endbr64 
+    11a4:	31 ed                	xor    %ebp,%ebp
+    11a6:	49 89 d1             	mov    %rdx,%r9
+    11a9:	5e                   	pop    %rsi
+    11aa:	48 89 e2             	mov    %rsp,%rdx
+    11ad:	48 83 e4 f0          	and    $0xfffffffffffffff0,%rsp
+    11b1:	50                   	push   %rax
+    11b2:	54                   	push   %rsp
+    11b3:	45 31 c0             	xor    %r8d,%r8d
+    11b6:	31 c9                	xor    %ecx,%ecx
+    11b8:	48 8d 3d c1 fe ff ff 	lea    -0x13f(%rip),%rdi        # 1080 <main>
+    11bf:	ff 15 13 2e 00 00    	call   *0x2e13(%rip)        # 3fd8 <__libc_start_main@GLIBC_2.34>
+    11c5:	f4                   	hlt    
+    11c6:	66 2e 0f 1f 84 00 00 	cs nopw 0x0(%rax,%rax,1)
+    11cd:	00 00 00 
+
+00000000000011d0 <deregister_tm_clones>:
+    11d0:	48 8d 3d 39 2e 00 00 	lea    0x2e39(%rip),%rdi        # 4010 <__TMC_END__>
+    11d7:	48 8d 05 32 2e 00 00 	lea    0x2e32(%rip),%rax        # 4010 <__TMC_END__>
+    11de:	48 39 f8             	cmp    %rdi,%rax
+    11e1:	74 15                	je     11f8 <deregister_tm_clones+0x28>
+    11e3:	48 8b 05 f6 2d 00 00 	mov    0x2df6(%rip),%rax        # 3fe0 <_ITM_deregisterTMCloneTable@Base>
+    11ea:	48 85 c0             	test   %rax,%rax
+    11ed:	74 09                	je     11f8 <deregister_tm_clones+0x28>
+    11ef:	ff e0                	jmp    *%rax
+    11f1:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+    11f8:	c3                   	ret    
+    11f9:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+
+0000000000001200 <register_tm_clones>:
+    1200:	48 8d 3d 09 2e 00 00 	lea    0x2e09(%rip),%rdi        # 4010 <__TMC_END__>
+    1207:	48 8d 35 02 2e 00 00 	lea    0x2e02(%rip),%rsi        # 4010 <__TMC_END__>
+    120e:	48 29 fe             	sub    %rdi,%rsi
+    1211:	48 89 f0             	mov    %rsi,%rax
+    1214:	48 c1 ee 3f          	shr    $0x3f,%rsi
+    1218:	48 c1 f8 03          	sar    $0x3,%rax
+    121c:	48 01 c6             	add    %rax,%rsi
+    121f:	48 d1 fe             	sar    %rsi
+    1222:	74 14                	je     1238 <register_tm_clones+0x38>
+    1224:	48 8b 05 c5 2d 00 00 	mov    0x2dc5(%rip),%rax        # 3ff0 <_ITM_registerTMCloneTable@Base>
+    122b:	48 85 c0             	test   %rax,%rax
+    122e:	74 08                	je     1238 <register_tm_clones+0x38>
+    1230:	ff e0                	jmp    *%rax
+    1232:	66 0f 1f 44 00 00    	nopw   0x0(%rax,%rax,1)
+    1238:	c3                   	ret    
+    1239:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+
+0000000000001240 <__do_global_dtors_aux>:
+    1240:	f3 0f 1e fa          	endbr64 
+    1244:	80 3d c5 2d 00 00 00 	cmpb   $0x0,0x2dc5(%rip)        # 4010 <__TMC_END__>
+    124b:	75 2b                	jne    1278 <__do_global_dtors_aux+0x38>
+    124d:	55                   	push   %rbp
+    124e:	48 83 3d a2 2d 00 00 	cmpq   $0x0,0x2da2(%rip)        # 3ff8 <__cxa_finalize@GLIBC_2.2.5>
+    1255:	00 
+    1256:	48 89 e5             	mov    %rsp,%rbp
+    1259:	74 0c                	je     1267 <__do_global_dtors_aux+0x27>
+    125b:	48 8b 3d a6 2d 00 00 	mov    0x2da6(%rip),%rdi        # 4008 <__dso_handle>
+    1262:	e8 e9 fd ff ff       	call   1050 <__cxa_finalize@plt>
+    1267:	e8 64 ff ff ff       	call   11d0 <deregister_tm_clones>
+    126c:	c6 05 9d 2d 00 00 01 	movb   $0x1,0x2d9d(%rip)        # 4010 <__TMC_END__>
+    1273:	5d                   	pop    %rbp
+    1274:	c3                   	ret    
+    1275:	0f 1f 00             	nopl   (%rax)
+    1278:	c3                   	ret    
+    1279:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+
+0000000000001280 <frame_dummy>:
+    1280:	f3 0f 1e fa          	endbr64 
+    1284:	e9 77 ff ff ff       	jmp    1200 <register_tm_clones>
+    1289:	0f 1f 80 00 00 00 00 	nopl   0x0(%rax)
+
+0000000000001290 <vector_add>:
+{
+    1290:	f3 0f 1e fa          	endbr64 
+  for(int i = 0; i < n; i++)
+    1294:	85 c9                	test   %ecx,%ecx
+    1296:	0f 8e d9 00 00 00    	jle    1375 <vector_add+0xe5>
+    129c:	4c 8d 42 04          	lea    0x4(%rdx),%r8
+    12a0:	48 89 f8             	mov    %rdi,%rax
+    12a3:	4c 29 c0             	sub    %r8,%rax
+    12a6:	48 83 f8 08          	cmp    $0x8,%rax
+    12aa:	41 0f 97 c0          	seta   %r8b
+    12ae:	83 f9 01             	cmp    $0x1,%ecx
+    12b1:	0f 95 c0             	setne  %al
+    12b4:	41 84 c0             	test   %al,%r8b
+    12b7:	0f 84 9b 00 00 00    	je     1358 <vector_add+0xc8>
+    12bd:	4c 8d 46 04          	lea    0x4(%rsi),%r8
+    12c1:	48 89 f8             	mov    %rdi,%rax
+    12c4:	4c 29 c0             	sub    %r8,%rax
+    12c7:	48 83 f8 08          	cmp    $0x8,%rax
+    12cb:	0f 86 87 00 00 00    	jbe    1358 <vector_add+0xc8>
+    12d1:	8d 41 ff             	lea    -0x1(%rcx),%eax
+    12d4:	41 89 c9             	mov    %ecx,%r9d
+    12d7:	83 f8 02             	cmp    $0x2,%eax
+    12da:	0f 86 96 00 00 00    	jbe    1376 <vector_add+0xe6>
+    12e0:	41 89 c8             	mov    %ecx,%r8d
+    12e3:	31 c0                	xor    %eax,%eax
+    12e5:	41 c1 e8 02          	shr    $0x2,%r8d
+    12e9:	49 c1 e0 04          	shl    $0x4,%r8
+    12ed:	0f 1f 00             	nopl   (%rax)
+    c[i] = a[i] + b[i];
+    12f0:	f3 0f 6f 04 06       	movdqu (%rsi,%rax,1),%xmm0
+    12f5:	f3 0f 6f 14 02       	movdqu (%rdx,%rax,1),%xmm2
+    12fa:	66 0f fe c2          	paddd  %xmm2,%xmm0
+    12fe:	0f 11 04 07          	movups %xmm0,(%rdi,%rax,1)
+  for(int i = 0; i < n; i++)
+    1302:	48 83 c0 10          	add    $0x10,%rax
+    1306:	49 39 c0             	cmp    %rax,%r8
+    1309:	75 e5                	jne    12f0 <vector_add+0x60>
+    130b:	41 89 c8             	mov    %ecx,%r8d
+    130e:	41 83 e0 fc          	and    $0xfffffffc,%r8d
+    1312:	44 89 c0             	mov    %r8d,%eax
+    1315:	44 39 c1             	cmp    %r8d,%ecx
+    1318:	74 5b                	je     1375 <vector_add+0xe5>
+    131a:	44 29 c1             	sub    %r8d,%ecx
+    131d:	41 89 c9             	mov    %ecx,%r9d
+    1320:	83 f9 01             	cmp    $0x1,%ecx
+    1323:	74 23                	je     1348 <vector_add+0xb8>
+    1325:	44 89 c1             	mov    %r8d,%ecx
+    c[i] = a[i] + b[i];
+    1328:	f3 0f 7e 04 8e       	movq   (%rsi,%rcx,4),%xmm0
+    132d:	f3 0f 7e 0c 8a       	movq   (%rdx,%rcx,4),%xmm1
+    1332:	66 0f fe c1          	paddd  %xmm1,%xmm0
+    1336:	66 0f d6 04 8f       	movq   %xmm0,(%rdi,%rcx,4)
+  for(int i = 0; i < n; i++)
+    133b:	44 89 c9             	mov    %r9d,%ecx
+    133e:	83 e1 fe             	and    $0xfffffffe,%ecx
+    1341:	01 c8                	add    %ecx,%eax
+    1343:	41 39 c9             	cmp    %ecx,%r9d
+    1346:	74 2d                	je     1375 <vector_add+0xe5>
+    c[i] = a[i] + b[i];
+    1348:	48 98                	cltq   
+    134a:	8b 14 82             	mov    (%rdx,%rax,4),%edx
+    134d:	03 14 86             	add    (%rsi,%rax,4),%edx
+    1350:	89 14 87             	mov    %edx,(%rdi,%rax,4)
+  for(int i = 0; i < n; i++)
+    1353:	c3                   	ret    
+    1354:	0f 1f 40 00          	nopl   0x0(%rax)
+    1358:	48 63 c9             	movslq %ecx,%rcx
+    135b:	31 c0                	xor    %eax,%eax
+    135d:	0f 1f 00             	nopl   (%rax)
+    c[i] = a[i] + b[i];
+    1360:	44 8b 04 82          	mov    (%rdx,%rax,4),%r8d
+    1364:	44 03 04 86          	add    (%rsi,%rax,4),%r8d
+    1368:	44 89 04 87          	mov    %r8d,(%rdi,%rax,4)
+  for(int i = 0; i < n; i++)
+    136c:	48 83 c0 01          	add    $0x1,%rax
+    1370:	48 39 c8             	cmp    %rcx,%rax
+    1373:	75 eb                	jne    1360 <vector_add+0xd0>
+}
+    1375:	c3                   	ret    
+  for(int i = 0; i < n; i++)
+    1376:	45 31 c0             	xor    %r8d,%r8d
+    1379:	31 c0                	xor    %eax,%eax
+    137b:	eb a8                	jmp    1325 <vector_add+0x95>
+    137d:	0f 1f 00             	nopl   (%rax)
+
+0000000000001380 <vector_print>:
+{
+    1380:	f3 0f 1e fa          	endbr64 
+    1384:	41 57                	push   %r15
+    1386:	31 c0                	xor    %eax,%eax
+    1388:	41 56                	push   %r14
+    138a:	41 55                	push   %r13
+    138c:	41 54                	push   %r12
+    138e:	55                   	push   %rbp
+    138f:	48 89 fd             	mov    %rdi,%rbp
+    1392:	bf 01 00 00 00       	mov    $0x1,%edi
+    1397:	53                   	push   %rbx
+    1398:	48 83 ec 18          	sub    $0x18,%rsp
+    139c:	89 74 24 0c          	mov    %esi,0xc(%rsp)
+    13a0:	48 8d 35 5d 0c 00 00 	lea    0xc5d(%rip),%rsi        # 2004 <_IO_stdin_used+0x4>
+    13a7:	e8 c4 fc ff ff       	call   1070 <__printf_chk@plt>
+    if (i == n - 1)
+    13ac:	4c 63 64 24 0c       	movslq 0xc(%rsp),%r12
+  for(int i = 0; i < n; i++) 
+    13b1:	45 85 e4             	test   %r12d,%r12d
+    13b4:	7e 53                	jle    1409 <vector_print+0x89>
+    13b6:	45 8d 6c 24 ff       	lea    -0x1(%r12),%r13d
+    13bb:	31 db                	xor    %ebx,%ebx
+    13bd:	4c 8d 35 47 0c 00 00 	lea    0xc47(%rip),%r14        # 200b <_IO_stdin_used+0xb>
+    13c4:	4c 8d 3d 3b 0c 00 00 	lea    0xc3b(%rip),%r15        # 2006 <_IO_stdin_used+0x6>
+    13cb:	eb 1b                	jmp    13e8 <vector_print+0x68>
+    13cd:	0f 1f 00             	nopl   (%rax)
+    13d0:	4c 89 f6             	mov    %r14,%rsi
+    13d3:	bf 01 00 00 00       	mov    $0x1,%edi
+    13d8:	31 c0                	xor    %eax,%eax
+    13da:	48 83 c3 01          	add    $0x1,%rbx
+    13de:	e8 8d fc ff ff       	call   1070 <__printf_chk@plt>
+    13e3:	49 39 dc             	cmp    %rbx,%r12
+    13e6:	74 21                	je     1409 <vector_print+0x89>
+      printf("%d)\n", v[i]);
+    13e8:	8b 54 9d 00          	mov    0x0(%rbp,%rbx,4),%edx
+    if (i == n - 1)
+    13ec:	41 39 dd             	cmp    %ebx,%r13d
+    13ef:	75 df                	jne    13d0 <vector_print+0x50>
+    13f1:	4c 89 fe             	mov    %r15,%rsi
+    13f4:	bf 01 00 00 00       	mov    $0x1,%edi
+    13f9:	31 c0                	xor    %eax,%eax
+  for(int i = 0; i < n; i++) 
+    13fb:	48 83 c3 01          	add    $0x1,%rbx
+    13ff:	e8 6c fc ff ff       	call   1070 <__printf_chk@plt>
+    1404:	49 39 dc             	cmp    %rbx,%r12
+    1407:	75 df                	jne    13e8 <vector_print+0x68>
+}
+    1409:	48 83 c4 18          	add    $0x18,%rsp
+    140d:	5b                   	pop    %rbx
+    140e:	5d                   	pop    %rbp
+    140f:	41 5c                	pop    %r12
+    1411:	41 5d                	pop    %r13
+    1413:	41 5e                	pop    %r14
+    1415:	41 5f                	pop    %r15
+    1417:	c3                   	ret    
+
+Déassemblage de la section .fini :
+
+0000000000001418 <_fini>:
+    1418:	f3 0f 1e fa          	endbr64 
+    141c:	48 83 ec 08          	sub    $0x8,%rsp
+    1420:	48 83 c4 08          	add    $0x8,%rsp
+    1424:	c3                   	ret    
