@@ -4,12 +4,14 @@
 void *myThread1(void *parameter)
 {
     printf("Hello World 1 !\n");
+    printf("Thread 1 PID : %u\n", (unsigned int)pthread_self());
     return NULL;
 }
 
 void *myThread2(void *parameter)
 {
     printf("Hello World 2 !\n");
+    printf("Thread 2 PID : %u\n", (unsigned int)pthread_self());
     return NULL;
 }
 
