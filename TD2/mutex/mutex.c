@@ -9,8 +9,9 @@ mutex_t init_mutex()
 }
 
 void lock(mutex_t *mutex) {
-    int local_ticket = atomic_fetch_add(&mutex->ticket, 1);
-    while (local_ticket != mutex->turn){};
+    unsigned int local_ticket = atomic_load(&mutex->ticket);
+    while(!atomic_compare_exchange_strong(&mutex->ticket, &local_ticket, local_ticket+1)) ;
+    while (local_ticket != mutex->turn) ;
     return;
 }
 
