@@ -15,5 +15,6 @@ void lock(mutex_t *mutex) {
 }
 
 void unlock(mutex_t *mutex) {
-    atomic_fetch_add(&mutex->turn, 1);
+    mutex->turn++;
+    atomic_thread_fence(memory_order_seq_cst);
 }

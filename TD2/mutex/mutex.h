@@ -4,7 +4,7 @@
 typedef struct mutex
 {
     volatile atomic_uint ticket;
-    volatile atomic_uint turn;
+    volatile unsigned int turn;
 } mutex_t;
 
 mutex_t init_mutex();
