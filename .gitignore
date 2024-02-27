@@ -1,2 +1,8 @@
 **/*.pdf
+**/*.o
 TD2/Q1
+TD2/TD2-sources/td2.4_mutex
+TD2/TD2-sources/td2.3_storebuffer
+TD2/TD2-sources/td2.2_interleavings
+TD2/mutex/main_mutex
+.vscode/settings.json

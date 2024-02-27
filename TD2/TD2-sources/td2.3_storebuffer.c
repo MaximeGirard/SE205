@@ -13,6 +13,7 @@ static atomic_int counter = 0;
 void *threadA(void *parameter)
 {
   x = 1;
+  atomic_thread_fence(memory_order_seq_cst);
   if (y == 0)
     counter++;
 
@@ -23,6 +24,7 @@ void *threadA(void *parameter)
 void *threadB(void *parameter)
 {
   y = 1;
+  atomic_thread_fence(memory_order_seq_cst);
   if (x == 0)
     counter++;
 
