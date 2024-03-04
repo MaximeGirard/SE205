@@ -172,6 +172,8 @@ int main(int argc, char *argv[])
   {
     free(arg[i]);
   }
+  free(arg);
+  free(tasks);
 }
 
 void read_file(char *filename)

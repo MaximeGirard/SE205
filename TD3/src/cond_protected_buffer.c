@@ -13,6 +13,9 @@ protected_buffer_t *cond_protected_buffer_init(int length) {
   b = (protected_buffer_t *)malloc(sizeof(protected_buffer_t));
   b->buffer = circular_buffer_init(length);
   // Initialize the synchronization components
+  pthread_mutex_init(&b->mut_exclusion, NULL);
+  pthread_cond_init(&b->buffer_not_empty, NULL);
+  pthread_cond_init(&b->buffer_not_full, NULL);
   return b;
 }
 
@@ -22,20 +25,25 @@ void *cond_protected_buffer_get(protected_buffer_t *b) {
   void *d;
 
   // Enter mutual exclusion
+  pthread_mutex_lock(&b->mut_exclusion);
 
   // Wait until there is a full slot to get data from the unprotected
   // circular buffer (circular_buffer_get).
+  while(circular_buffer_size(b->buffer) < 1) pthread_cond_wait(&b->buffer_not_empty, &b->mut_exclusion);
+
+  d = circular_buffer_get(b->buffer);
 
   // Signal or broadcast that an empty slot is available in the
   // unprotected circular buffer (if needed)
+  pthread_cond_broadcast(&b->buffer_not_full);
 
-  d = circular_buffer_get(b->buffer);
   if (d == NULL)
     mtxprintf(pb_debug, "get (B) - data=NULL\n");
   else
     mtxprintf(pb_debug, "get (B) - data=%d\n", *(int *)d);
 
-    // Leave mutual exclusion
+  // Leave mutual exclusion
+  pthread_mutex_unlock(&b->mut_exclusion);
 
   return d;
 }
@@ -45,20 +53,25 @@ void *cond_protected_buffer_get(protected_buffer_t *b) {
 void cond_protected_buffer_put(protected_buffer_t *b, void *d) {
 
   // Enter mutual exclusion
+  pthread_mutex_lock(&b->mut_exclusion);
 
   // Wait until there is an empty slot to put data in the unprotected
   // circular buffer (circular_buffer_put).
+  while(!(circular_buffer_size(b->buffer) < b->buffer->max_size)) pthread_cond_wait(&b->buffer_not_full, &b->mut_exclusion);
+
+  circular_buffer_put(b->buffer, d);
 
   // Signal or broadcast that a full slot is available in the
   // unprotected circular buffer (if needed)
+  pthread_cond_broadcast(&b->buffer_not_empty);
 
-  circular_buffer_put(b->buffer, d);
   if (d == NULL)
     mtxprintf(pb_debug, "put (B) - data=NULL\n");
   else
     mtxprintf(pb_debug, "put (B) - data=%d\n", *(int *)d);
 
-    // Leave mutual exclusion
+  // Leave mutual exclusion
+  pthread_mutex_unlock(&b->mut_exclusion);
 }
 
 // Extract an element from buffer. If the attempted operation is not

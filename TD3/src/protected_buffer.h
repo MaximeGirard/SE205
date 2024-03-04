@@ -15,6 +15,8 @@ extern int pb_debug;
 typedef struct {
   long sem_impl;
   circular_buffer_t *buffer;
+  pthread_mutex_t mut_exclusion;
+  pthread_cond_t buffer_not_empty, buffer_not_full;
 } protected_buffer_t;
 
 // Initialise the protected buffer structure above. sem_impl specifies
