@@ -80,17 +80,25 @@ void *cond_protected_buffer_remove(protected_buffer_t *b) {
   void *d;
 
   // Enter mutual exclusion
+  pthread_mutex_lock(&b->mut_exclusion);
 
+  if(circular_buffer_size(b->buffer) < 1) {
+    d = NULL;
+  } else {
+    d = circular_buffer_get(b->buffer);
+  }
   // Signal or broadcast that an empty slot is available in the
   // unprotected circular buffer (if needed)
+  if (d != NULL) pthread_cond_broadcast(&b->buffer_not_full);
 
-  d = circular_buffer_get(b->buffer);
   if (d == NULL)
     mtxprintf(pb_debug, "remove (U) - data=NULL\n");
   else
     mtxprintf(pb_debug, "remove (U) - data=%d\n", *(int *)d);
 
-    // Leave mutual exclusion
+  // Leave mutual exclusion
+  pthread_mutex_unlock(&b->mut_exclusion);
+
   return d;
 }
 
@@ -100,11 +108,16 @@ int cond_protected_buffer_add(protected_buffer_t *b, void *d) {
   int done;
 
   // Enter mutual exclusion
+  pthread_mutex_lock(&b->mut_exclusion);
 
   // Signal or broadcast that a full slot is available in the
   // unprotected circular buffer (if needed)
+  if(circular_buffer_size(b->buffer) < b->buffer->max_size) {
+    done = circular_buffer_put(b->buffer, d);
+  } else {
+    done = 0;
+  }
 
-  done = circular_buffer_put(b->buffer, d);
   if (!done)
     d = NULL;
 
@@ -113,7 +126,9 @@ int cond_protected_buffer_add(protected_buffer_t *b, void *d) {
   else
     mtxprintf(pb_debug, "add (U) - data=%d\n", *(int *)d);
 
-    // Leave mutual exclusion
+  // Leave mutual exclusion
+  pthread_mutex_unlock(&b->mut_exclusion);
+  
   return done;
 }
 
