@@ -6,3 +6,5 @@ TD2/TD2-sources/td2.3_storebuffer
 TD2/TD2-sources/td2.2_interleavings
 TD2/mutex/main_mutex
 .vscode/settings.json
+TD3/src/deps
+TD3/src/main_protected_buffer
