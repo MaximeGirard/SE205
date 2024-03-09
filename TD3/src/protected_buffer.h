@@ -17,6 +17,7 @@ typedef struct {
   circular_buffer_t *buffer;
   pthread_mutex_t mut_exclusion;
   pthread_cond_t buffer_not_empty, buffer_not_full;
+  sem_t *buffer_full_slot_count, *buffer_empty_slot_count;
 } protected_buffer_t;
 
 // Initialise the protected buffer structure above. sem_impl specifies
