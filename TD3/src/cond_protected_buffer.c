@@ -121,11 +121,12 @@ int cond_protected_buffer_add(protected_buffer_t *b, void *d)
   // Enter mutual exclusion
   pthread_mutex_lock(&b->mut_exclusion);
 
-  // Signal or broadcast that a full slot is available in the
-  // unprotected circular buffer (if needed)
   if (circular_buffer_size(b->buffer) < b->buffer->max_size)
   {
     done = circular_buffer_put(b->buffer, d);
+    // Signal or broadcast that a full slot is available in the
+    // unprotected circular buffer (if needed)
+    pthread_cond_broadcast(&b->buffer_not_empty);
   }
   else
   {
