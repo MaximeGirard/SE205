@@ -5,10 +5,12 @@ import java.util.concurrent.TimeUnit;
 class SemBoundedBuffer extends BoundedBuffer {
     Semaphore emptySlots, fullSlots;
 
-    // Initialise the protected buffer structure above. 
-    SemBoundedBuffer (int maxSize) {
+    // Initialise the protected buffer structure above.
+    SemBoundedBuffer(int maxSize) {
         super(maxSize);
         // Initialize the synchronization attributes
+        emptySlots = new Semaphore(maxSize);
+        fullSlots = new Semaphore(0);
     }
 
     // Extract an element from buffer. If the attempted operation is
@@ -18,10 +20,14 @@ class SemBoundedBuffer extends BoundedBuffer {
 
         // Enter mutual exclusion and enforce synchronisation semantics
         // using semaphores.
-            value = super.get();
+        fullSlots.acquire();
+
+        value = super.get();
 
         // Leave mutual exclusion and enforce synchronisation semantics
         // using semaphores.
+        emptySlots.release();
+
         return value;
     }
 
@@ -32,10 +38,13 @@ class SemBoundedBuffer extends BoundedBuffer {
 
         // Enter mutual exclusion and enforce synchronisation semantics
         // using semaphores.
-            done = super.put(value);
+        emptySlots.acquire();
 
-            // Leave mutual exclusion and enforce synchronisation semantics
-            // using semaphores.
+        done = super.put(value);
+
+        // Leave mutual exclusion and enforce synchronisation semantics
+        // using semaphores.
+        fullSlots.release();
         return done;
     }
 
@@ -47,11 +56,11 @@ class SemBoundedBuffer extends BoundedBuffer {
 
         // Enter mutual exclusion and enforce synchronisation semantics
         // using semaphores.
-            value = super.get();
+        value = super.get();
 
         // Leave mutual exclusion and enforce synchronisation semantics
         // using semaphores.
-       return value;
+        return value;
     }
 
     // Insert an element into buffer. If the attempted operation is
@@ -61,27 +70,26 @@ class SemBoundedBuffer extends BoundedBuffer {
 
         // Enter mutual exclusion and enforce synchronisation semantics
         // using semaphores.
-            super.put(value);
+        super.put(value);
 
         // Leave mutual exclusion and enforce synchronisation semantics
         // using semaphores.
         return true;
     }
 
-    
     // Extract an element from buffer. If the attempted operation is not
     // possible immedidately, the method call blocks until it is, but
     // waits no longer than the given deadline. Return the element if
     // successful. Otherwise, return NULL.
     Object poll(long deadline) {
         Object value;
-        long    timeout;
+        long timeout;
         boolean done = false;
         boolean interrupted = true;
 
         // Enter mutual exclusion and enforce synchronisation semantics
         // using semaphores.
-            value = super.get();
+        value = super.get();
 
         // Leave mutual exclusion and enforce synchronisation semantics
         // using semaphores.
@@ -93,13 +101,13 @@ class SemBoundedBuffer extends BoundedBuffer {
     // waits no longer than the given deadline. Return 0 if not
     // successful. Otherwise, return 1.
     boolean offer(Object value, long deadline) {
-        long    timeout;
+        long timeout;
         boolean done = false;
         boolean interrupted = true;
 
         // Enter mutual exclusion and enforce synchronisation semantics
         // using semaphores.
-            done = super.put(value);
+        done = super.put(value);
         return done;
     }
 }
