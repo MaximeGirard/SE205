@@ -9,11 +9,13 @@ extern int pt_debug;
 
 typedef void *(*main_func_t)(void *);
 
-typedef struct {
+typedef struct
+{
   int core_pool_size;
   int max_pool_size;
   int size;
   int shutdown;
+  pthread_mutex_t mut_exclusion;
 } thread_pool_t;
 
 // Create a thread pool. This pool must be protected against
@@ -27,7 +29,8 @@ void pool_thread_terminate(thread_pool_t *thread_pool);
 // params is the parameter for the original main procedure.
 // is_core is an extra parameter to indicate to a pool thread whether
 // it belongs to the core thread pool or not.
-typedef struct {
+typedef struct
+{
   int is_core;
   void *params;
   int id;

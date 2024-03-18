@@ -19,6 +19,7 @@ protected_buffer_t *sem_protected_buffer_init(int length)
   b = (protected_buffer_t *)malloc(sizeof(protected_buffer_t));
   b->buffer = circular_buffer_init(length);
   // Initialize the synchronization attributes
+  pthread_mutex_init(&b->mut_exclusion, NULL);
   // Use these filenames as named semaphores
   sem_unlink(EMPTY_SLOTS_NAME);
   sem_unlink(FULL_SLOTS_NAME);

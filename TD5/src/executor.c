@@ -20,7 +20,8 @@ void *pool_thread_main(void *arg);
 future_t shutdown_future;
 void set_shutdown(future_t *future) { future->callable = NULL; };
 
-int is_shutdown(future_t *future) {
+int is_shutdown(future_t *future)
+{
   return ((future == NULL) || (future->callable == NULL));
 };
 
@@ -30,7 +31,8 @@ int is_shutdown(future_t *future) {
   store pending callables.
 */
 executor_t *executor_init(int core_pool_size, int max_pool_size,
-                          long keep_alive_time, int callable_array_size) {
+                          long keep_alive_time, int callable_array_size)
+{
   executor_t *executor;
   executor = (executor_t *)malloc(sizeof(executor_t));
 
@@ -50,7 +52,8 @@ executor_t *executor_init(int core_pool_size, int max_pool_size,
   Associate a thread from thread pool to a callable. Then invoke
   the callable. Otherwise, store it in the blocking queue.
 */
-future_t *submit_callable(executor_t *executor, callable_t *callable) {
+future_t *submit_callable(executor_t *executor, callable_t *callable)
+{
   future_t *future = (future_t *)malloc(sizeof(future_t));
   callable->executor = executor;
   future->callable = callable;
@@ -69,17 +72,18 @@ future_t *submit_callable(executor_t *executor, callable_t *callable) {
   if (pool_thread_create(executor->thread_pool, pool_thread_main, future, 0))
     return future;
 
-    /*
-      When there are already enough created threads, queue the callable
-      in the blocking queue.
-    */
+  /*
+    When there are already enough created threads, queue the callable
+    in the blocking queue.
+  */
 
   /*
     When the queue is full, pop the first future from the queue and
     push the current one. We do that to preserve the queuing order.
   */
   future_t *first = protected_buffer_remove(executor->futures);
-  if (first != NULL) {
+  if (first != NULL)
+  {
     protected_buffer_add(executor->futures, future);
     future = first;
   }
@@ -98,19 +102,27 @@ future_t *submit_callable(executor_t *executor, callable_t *callable) {
 /*
   Get result from callable execution. Block if not available.
 */
-void *get_callable_result(future_t *future) {
+void *get_callable_result(future_t *future)
+{
   void *result;
 
   /*
     Protect against concurrent accesses. Block until the callable has
     completed.
   */
+  pthread_mutex_lock(&future->mut_exclusion);
+
+  while (!future->completed)
+  {
+    pthread_cond_wait(&future->res_signal, &future->mut_exclusion);
+  }
 
   result = (void *)future->result;
 
   /*
     Unprotect against concurrent accesses
   */
+  pthread_mutex_unlock(&future->mut_exclusion);
 
   /*
     Do not bother to deallocate future
@@ -124,7 +136,8 @@ void *get_callable_result(future_t *future) {
   executed, the main procedure picks a pending callable from the
   executor blocking queue.
 */
-void *pool_thread_main(void *arg) {
+void *pool_thread_main(void *arg)
+{
   callable_t *callable;
   executor_t *executor;
   struct timespec ts_deadline;
@@ -152,14 +165,16 @@ void *pool_thread_main(void *arg) {
     future. It handles the first future passed in arg parameter. Once the
     callable has been executed possibly picks other ones.
   */
-  while (!terminate) {
+  while (!terminate)
+  {
     callable = (callable_t *)future->callable;
     executor = (executor_t *)callable->executor;
 
     /*
       The thread is not periodic.
     */
-    if (callable->period == 0) {
+    if (callable->period == 0)
+    {
       future->result = callable->main(callable->params);
 
       /*
@@ -167,6 +182,8 @@ void *pool_thread_main(void *arg) {
         its synchronisation objects should be updated to resume threads waiting
         for the result.
       */
+      future->completed = 1;
+      pthread_cond_broadcast(&future->res_signal);
 
       /*
        For sanity reasons, initialize the next future to shutdown future in
@@ -183,14 +200,16 @@ void *pool_thread_main(void *arg) {
        deallocate pool threads (keep alive forever), wait for the next
        available future.
       */
-      if (is_core || executor->keep_alive_time == FOREVER) {
+      if (is_core || executor->keep_alive_time == FOREVER)
+      {
 
         /*
           Check future is a shutdown future. If so, terminate current thread and
           add another shutdown future to the queue to unblock another thread
           and force it to terminate.
         */
-        if (is_shutdown(future)) {
+        if (is_shutdown(future))
+        {
           pool_thread_terminate(executor->thread_pool);
           terminate = true;
           protected_buffer_add(executor->futures, (void *)&shutdown_future);
@@ -201,7 +220,8 @@ void *pool_thread_main(void *arg) {
         idle for keep_alive_time milliseconds. This thread is not core
         since core threads are not deallocated.
       */
-      else {
+      else
+      {
         /*
           Get a new future during at most keep_alive_time ms.
           Remember that POSIX delays are absolute delays.
@@ -210,7 +230,8 @@ void *pool_thread_main(void *arg) {
           There is no callable to handle after timeout, remove the current
           pool thread from the pool. If it is successful, terminate thread.
         */
-        if (future == NULL) {
+        if (future == NULL)
+        {
           pool_thread_terminate(executor->thread_pool);
           terminate = true;
         }
@@ -219,13 +240,16 @@ void *pool_thread_main(void *arg) {
          shutdown future to the queue to unblock another thread and force it to
          terminate. Then, terminate threat.
         */
-        else if (is_shutdown(future)) {
+        else if (is_shutdown(future))
+        {
           protected_buffer_add(executor->futures, (void *)&shutdown_future);
           pool_thread_terminate(executor->thread_pool);
           terminate = true;
         }
       }
-    } else {
+    }
+    else
+    {
       future->result = callable->main(callable->params);
 
       /*
@@ -236,7 +260,8 @@ void *pool_thread_main(void *arg) {
       /*
         Loop as long as there is no shutdown.
       */
-      if (get_shutdown(executor->thread_pool)) {
+      if (get_shutdown(executor->thread_pool))
+      {
         pool_thread_terminate(executor->thread_pool);
         terminate = true;
       };
@@ -252,7 +277,8 @@ void *pool_thread_main(void *arg) {
   effect if already shut down. This method waits for previously submitted tasks
   to complete execution.
 */
-void executor_shutdown(executor_t *executor) {
+void executor_shutdown(executor_t *executor)
+{
   if (executor->shutdown)
     return;
   else
