@@ -58,12 +58,13 @@ future_t *submit_callable(executor_t *executor, callable_t *callable)
   callable->executor = executor;
   future->callable = callable;
   future->completed = 0;
-
   /*
     Future must include synchronisation objects to block threads until the
     result of the callable computation becames available. See
     function get_callable_result.
   */
+  pthread_mutex_init(&future->mut_exclusion, NULL);
+  pthread_cond_init(&future->res_signal, NULL);
 
   /*
     Try to create a thread, but do not exceed core_pool_size
@@ -77,26 +78,28 @@ future_t *submit_callable(executor_t *executor, callable_t *callable)
     in the blocking queue.
   */
 
-  /*
-    When the queue is full, pop the first future from the queue and
-    push the current one. We do that to preserve the queuing order.
-  */
-  future_t *first = protected_buffer_remove(executor->futures);
-  if (first != NULL)
+  // Try to add an element to the queue
+  if (!protected_buffer_add(executor->futures, future))
   {
-    protected_buffer_add(executor->futures, future);
-    future = first;
+    /*
+      When the queue is full, pop the first future from the queue and
+      push the current one. We do that to preserve the queuing order.
+    */
+    future_t *first = protected_buffer_remove(executor->futures);
+    if (first != NULL)
+    {
+      protected_buffer_add(executor->futures, future);
+      future = first;
+    }
+    /*
+      Try to create a thread, but allow to exceed core_pool_size (last
+      parameter set to true).
+    */
+    pool_thread_create(executor->thread_pool, pool_thread_main, future, true);
+    return future;
   }
 
-  /*
-    Try to create a thread, but allow to exceed core_pool_size (last
-    parameter set to true).
-  */
-
-  /*
-    We failed. The executor is overrun.
-  */
-  return NULL;
+  return future;
 }
 
 /*
@@ -176,7 +179,6 @@ void *pool_thread_main(void *arg)
     if (callable->period == 0)
     {
       future->result = callable->main(callable->params);
-
       /*
         As the callable has been executed, the future attribute completed and
         its synchronisation objects should be updated to resume threads waiting
@@ -186,15 +188,8 @@ void *pool_thread_main(void *arg)
       pthread_cond_broadcast(&future->res_signal);
 
       /*
-       For sanity reasons, initialize the next future to shutdown future in
-       order for the system to "work" while not being fully implemented
-      */
-      future = &shutdown_future;
-
-      /*
         Get the next future as the current one is not periodic. Two cases :
       */
-
       /*
        If the thread belongs to the core pool or if the executor does not
        deallocate pool threads (keep alive forever), wait for the next
@@ -202,6 +197,7 @@ void *pool_thread_main(void *arg)
       */
       if (is_core || executor->keep_alive_time == FOREVER)
       {
+        future = protected_buffer_get(executor->futures);
 
         /*
           Check future is a shutdown future. If so, terminate current thread and
@@ -226,6 +222,14 @@ void *pool_thread_main(void *arg)
           Get a new future during at most keep_alive_time ms.
           Remember that POSIX delays are absolute delays.
         */
+        struct timeval now_tv;
+        struct timespec now_ts;
+
+        gettimeofday(&now_tv, NULL);
+        TIMEVAL_TO_TIMESPEC(&now_tv, &now_ts);
+        add_millis_to_timespec(&now_ts, executor->keep_alive_time);
+
+        future = protected_buffer_poll(executor->futures, &now_ts);
         /*
           There is no callable to handle after timeout, remove the current
           pool thread from the pool. If it is successful, terminate thread.
