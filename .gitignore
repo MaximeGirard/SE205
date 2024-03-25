@@ -8,3 +8,7 @@ TD2/mutex/main_mutex
 **/.vscode/settings.json
 TD3/src/deps
 TD3/src/main_protected_buffer
+TD6/Multiplexed_UDP/src/client
+TD6/Multiplexed_UDP/src/serv
+TD6/TCP/src/client
+TD6/TCP/src/serv
